@@ -69,6 +69,32 @@ func (m *File) WriteStringAt(src string, offset int64) int {
 	return copy(m.data[offset:], src)
 }
 
+// ReadUint8At reads uint64 from offset.
+func (m *File) ReadUint8At(offset int64) uint8 {
+	m.boundaryChecks(offset, 1)
+	return m.data[offset]
+}
+
+// WriteUint8At writes num at offset.
+func (m *File) WriteUint8At(num uint8, offset int64) {
+	m.boundaryChecks(offset, 1)
+	m.dirty = true
+	m.data[offset] = num
+}
+
+// ReadUint32At reads uint64 from offset.
+func (m *File) ReadUint32At(offset int64) uint32 {
+	m.boundaryChecks(offset, 4)
+	return binary.LittleEndian.Uint32(m.data[offset : offset+4])
+}
+
+// WriteUint32At writes num at offset.
+func (m *File) WriteUint32At(num uint32, offset int64) {
+	m.boundaryChecks(offset, 4)
+	m.dirty = true
+	binary.LittleEndian.PutUint32(m.data[offset:offset+4], num)
+}
+
 // ReadUint64At reads uint64 from offset.
 func (m *File) ReadUint64At(offset int64) uint64 {
 	m.boundaryChecks(offset, 8)
