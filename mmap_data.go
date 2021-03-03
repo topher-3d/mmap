@@ -1,7 +1,6 @@
 package mmap
 
 import (
-	"encoding/binary"
 	"strings"
 	"syscall"
 	"unsafe"
@@ -85,27 +84,31 @@ func (m *File) WriteUint8At(num uint8, offset int64) {
 // ReadUint32At reads uint64 from offset.
 func (m *File) ReadUint32At(offset int64) uint32 {
 	m.boundaryChecks(offset, 4)
-	return binary.LittleEndian.Uint32(m.data[offset : offset+4])
+	// return binary.LittleEndian.Uint32(m.data[offset : offset+4])
+	return *(*uint32)(unsafe.Pointer(&m.data[offset]))
 }
 
 // WriteUint32At writes num at offset.
 func (m *File) WriteUint32At(num uint32, offset int64) {
 	m.boundaryChecks(offset, 4)
 	m.dirty = true
-	binary.LittleEndian.PutUint32(m.data[offset:offset+4], num)
+	// binary.LittleEndian.PutUint32(m.data[offset:offset+4], num)
+	*(*uint32)(unsafe.Pointer(&m.data[offset])) = num
 }
 
 // ReadUint64At reads uint64 from offset.
 func (m *File) ReadUint64At(offset int64) uint64 {
 	m.boundaryChecks(offset, 8)
-	return binary.LittleEndian.Uint64(m.data[offset : offset+8])
+	// return binary.LittleEndian.Uint64(m.data[offset : offset+8])
+	return *(*uint64)(unsafe.Pointer(&m.data[offset]))
 }
 
 // WriteUint64At writes num at offset.
 func (m *File) WriteUint64At(num uint64, offset int64) {
 	m.boundaryChecks(offset, 8)
 	m.dirty = true
-	binary.LittleEndian.PutUint64(m.data[offset:offset+8], num)
+	// binary.LittleEndian.PutUint64(m.data[offset:offset+8], num)
+	*(*uint64)(unsafe.Pointer(&m.data[offset])) = num
 }
 
 // Flush flushes the memory mapped region to disk. Flush makes a
@@ -123,4 +126,10 @@ func (m *File) Flush(flags int) error {
 
 	m.dirty = false
 	return nil
+}
+
+// Same as Flush(syscall.MS_SYNC) except this always does the syscall, dirty or not.
+func (m *File) Sync() error {
+	m.dirty = true
+	return m.Flush(syscall.MS_SYNC)
 }
