@@ -4,6 +4,13 @@ Interface for mmap syscall to provide safe and efficient access to memory.
 
 **Only works for darwin OS, Linux and Little Endian 64 bit architectures.**
 
+## Fork of...
+
+I forked this from [elamre/mmap](https://github.com/elamre/mmap), which was a fork
+of [grandecola/mmap](https://github.com/grandecola/mmap). I am using this to write
+to 32-bit AXI-Lite registers via mmap of /dev/mem on a Xilinx Zynq-based system. I
+need the "register" writes to be 32-bits in one operation.
+
 ## Safety & Efficiency
 Golang mmap syscall function exposes the mapped memory as array of bytes.
 If the array is referenced even after the memory region is unmapped,

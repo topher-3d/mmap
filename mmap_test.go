@@ -460,6 +460,47 @@ func TestWriteUint64At(t *testing.T) {
 	}
 }
 
+func TestWriteUint32_and_8At(t *testing.T) {
+	setup(t)
+	defer tearDown(t)
+
+	f, err := os.OpenFile(testPath, os.O_RDWR, 0644)
+	if err != nil {
+		t.Fatalf("error in opening file :: %v", err)
+	}
+	defer func() {
+		if err := f.Close(); err != nil {
+			t.Fatalf("error in closing file :: %v", err)
+		}
+	}()
+
+	m, err := NewSharedFileMmap(f, 0, len(testData), protPage)
+	if err != nil {
+		t.Fatalf("error in mapping :: %v", err)
+	}
+	defer func() {
+		if err := m.Unmap(); err != nil {
+			t.Fatalf("error in calling unmap :: %v", err)
+		}
+	}()
+
+	num32 := uint32(0xDEADBEEF)
+	m.WriteUint32At(num32, 4)
+
+	readBack32 := m.ReadUint32At(4)
+	if readBack32 != num32 {
+		t.Fatalf("Did not read back value written: Wrote 0x%X, read 0x%X", num32, readBack32)
+	}
+
+	num8 := uint8(0xAB)
+	m.WriteUint8At(num8, 9)
+
+	readBack8 := m.ReadUint8At(9)
+	if readBack8 != num8 {
+		t.Fatalf("Did not read back value written: Wrote 0x%X, read 0x%X", num8, readBack8)
+	}
+}
+
 func TestFailScenarios(t *testing.T) {
 	setup(t)
 	defer tearDown(t)
